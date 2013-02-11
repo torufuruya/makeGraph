@@ -1,7 +1,11 @@
 <?php
 
+/*
 const LOG_PATH = 'log/';
 const MAX_HISTORY = 5;
+ */
+define('LOG_PATH', 'log/');
+define('MAX_HISTORY', 5);
 
 //get post parameter
 $param_name = isset($_POST['name']) ? $_POST['name'] : null;
@@ -10,7 +14,7 @@ $date = array();
 $series = array();
 
 //generate member list
-$name_list = glob(LOG_PATH . '*', GLOB_ONLYDIR);
+$name_list = glob(LOG_PATH . '*', GLOB_NOSORT);
 foreach ($name_list as $key => $name) {
     $name_list[$key] = substr($name, strlen(LOG_PATH));
 }
@@ -20,7 +24,7 @@ if ($param_name == 'all') {
     foreach ($name_list as $key => $name) {
         $data = $date = $time = array();
         //check does file exist
-        $file_name = LOG_PATH . $name . '/' . $param_date . '.csv';
+        $file_name = LOG_PATH . $name;
         if (file_exists($file_name)) {
             $file = fopen($file_name, 'r');
             if (!$file) { continue; }
@@ -43,17 +47,17 @@ if ($param_name == 'all') {
         $series[$key]['data'] = $time;
     }
     if (empty($series)) {
-        header("Location: http://localhost/makeGraph/index.php?error=true");
+        header("Location: http://toru-furuya/~toru-furuya/makeGraph/index.php?error=true");
         exit;
     }
 //prepare specific member's log
 } else {
     //check does file exist
-    $file_name = LOG_PATH . $param_name . '/' . $param_date . '.csv';
+    $file_name = LOG_PATH . $param_name;
     if (file_exists($file_name)) {
         $file = fopen($file_name, 'r');
     } else {
-        header("Location: http://localhost/makeGraph/index.php?error=true");
+        header("Location: http://toru-furuya/~toru-furuya/makeGraph/index.php?error=true");
         exit;
     }
 
@@ -70,6 +74,7 @@ if ($param_name == 'all') {
     }
     $series[0]['name'] = $param_name;
     $series[0]['data'] = $time;
+    error_log(var_export($series, true));
 }
 
 //encode to json

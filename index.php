@@ -1,7 +1,11 @@
 <?php
 
+/*
 const LOG_PATH = 'log/';
 const MAX_HISTORY = 5;
+ */
+define('LOG_PATH', 'log/');
+define('MAX_HISTORY', 5);
 
 if (!empty($_GET["error"])) {
     $error_message = "その期間のログはありません。日を選択し直してください。";
@@ -9,7 +13,7 @@ if (!empty($_GET["error"])) {
     $error_message = "";
 }
 
-$log_list = glob(LOG_PATH . '*', GLOB_ONLYDIR);
+$log_list = glob(LOG_PATH . '*', GLOB_NOSORT);
 //generate member list from log file name
 foreach ($log_list as $name) {
     $name_list[] = substr($name, strlen(LOG_PATH));
