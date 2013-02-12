@@ -1,9 +1,5 @@
 <?php
 
-/*
-const LOG_PATH = 'log/';
-const MAX_HISTORY = 5;
- */
 define('LOG_PATH', 'log/');
 define('MAX_HISTORY', 5);
 
@@ -14,17 +10,18 @@ $date = array();
 $series = array();
 
 //generate member list
-$name_list = glob(LOG_PATH . '*', GLOB_NOSORT);
-foreach ($name_list as $key => $name) {
-    $name_list[$key] = substr($name, strlen(LOG_PATH));
+$file_list = glob(LOG_PATH . '*', GLOB_NOSORT);
+foreach ($file_list as $key => $file_name) {
+    if (preg_match('/([a-zA-Z0-9]+)%/', $file_name, $match)) {
+        $name_list[$match[1]] = $file_name;
+    }
 }
 
 //prepare all member's log
 if ($param_name == 'all') {
-    foreach ($name_list as $key => $name) {
+    foreach ($name_list as $name => $file_name) {
         $data = $date = $time = array();
         //check does file exist
-        $file_name = LOG_PATH . $name;
         if (file_exists($file_name)) {
             $file = fopen($file_name, 'r');
             if (!$file) { continue; }
@@ -41,10 +38,12 @@ if ($param_name == 'all') {
         foreach ($data as $k => $item) {
             $res = explode(' ', $item);
             $date[] = isset($res[0]) ? str_replace('-', '/', substr($res[0], 5)) : null;
-            $time[] = isset($res[1]) ? (float)$res[1] : null;
+            $time[] = isset($res[1]) ? round(str_replace(':', '.', $res[1]), 2) : null;
         }
-        $series[$key]['name'] = $name;
-        $series[$key]['data'] = $time;
+        $series[] = array(
+            'name' => $name,
+            'data' => $time,
+        );
     }
     if (empty($series)) {
         header("Location: http://toru-furuya/~toru-furuya/makeGraph/index.php?error=true");
@@ -53,11 +52,11 @@ if ($param_name == 'all') {
 //prepare specific member's log
 } else {
     //check does file exist
-    $file_name = LOG_PATH . $param_name;
+    $file_name = $name_list[$param_name];
     if (file_exists($file_name)) {
         $file = fopen($file_name, 'r');
     } else {
-        header("Location: http://toru-furuya/~toru-furuya/makeGraph/index.php?error=true");
+        header("Location: http://localhost/makeGraph/index.php?error=true");
         exit;
     }
 
@@ -69,12 +68,15 @@ if ($param_name == 'all') {
 
     foreach ($data as $key => $item) {
         $res = explode(' ', $item);
+        $times = isset($res[1]) ? round(str_replace(':', '.', $res[1]), 2) : null;
+        if (ceil($times) < 18) {
+            continue;
+        }
         $date[] = isset($res[0]) ? str_replace('-', '/', substr($res[0], 5)) : null;
-        $time[] = isset($res[1]) ? (float)$res[1] : null;
+        $time[] = $times;
     }
     $series[0]['name'] = $param_name;
     $series[0]['data'] = $time;
-    error_log(var_export($series, true));
 }
 
 //encode to json
@@ -157,7 +159,7 @@ $(function () {
     <option value="all">all
 EOF;
 
-foreach ($name_list as $name) {
+foreach ($name_list as $name => $file_name) {
     echo '<option value="' . $name . '">' . $name;
 }
 
