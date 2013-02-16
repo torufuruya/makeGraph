@@ -25,7 +25,7 @@ for ($i = 0; $i < MAX_HISTORY; $i++) {
 //output selectbox
 print<<<EOF
 <!DOCTYPE html>
-<html lang="en">
+<html>
   
   <head>
     <meta charset="utf-8">
@@ -62,22 +62,22 @@ print<<<EOF
       <div class="navbar-inner">
         <div class="container-fluid">
           <a class="brand" href="http://localhost/makeGraph/">
-            KAERASE Master
+            K&M
           </a>
           <ul class="nav">
             <li>
-              <a href="#madananimonai">
-                About
-              </a>
-            </li>
-            <li>
-              <a href="#madananimonai">
+              <a href="http://localhost/makeGraph/">
                 Home
               </a>
             </li>
             <li>
               <a href="#madananimonai">
-                Contact
+                Ranking
+              </a>
+            </li>
+            <li>
+              <a href="#madananimonai">
+                Award
               </a>
             </li>
           </ul>
@@ -87,10 +87,15 @@ print<<<EOF
     <div class="container-fluid">
       <div class="well">
         <div>
-          <h1>
-            GO&nbsp;HOME!
-          </h1>
-          produced by 4E Project.
+          <h2>
+            K&M
+          </h2>
+          <ul>
+            <li>K&M shows the graph based on the time you go home.</li>
+            <li>you can see trend of your quitting time and compare it with co-workers.</li>
+            <li>select member and month. then click output button.</li>
+            <li>produced by 4E Project.</li>
+          </ul>
         </div>
       </div>
       <p style="color:red">$error_message</p>

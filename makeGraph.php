@@ -2,6 +2,7 @@
 
 define('LOG_PATH', 'log/');
 define('MAX_HISTORY', 5);
+define('MIN_WORK_TIME', 14.5);
 
 //get post parameter
 $param_name = isset($_POST['name']) ? $_POST['name'] : null;
@@ -17,49 +18,78 @@ foreach ($file_list as $key => $file_name) {
     }
 }
 
+//generate month list
+for ($i = 0; $i < MAX_HISTORY; $i++) {
+    $month_list[] = date('Y-m', strtotime('-'.$i.'month'));
+}
+
 //prepare all member's log
 if ($param_name == 'all') {
+    $order = -1;
     foreach ($name_list as $name => $file_name) {
-        $data = $date = $time = array();
-        //check does file exist
-        if (file_exists($file_name)) {
-            $file = fopen($file_name, 'r');
-            if (!$file) { continue; }
-        } else {
+        $order = $order + 1;
+        //check if log file exists
+        if (!file_exists($file_name)) {
             continue;
         }
+        $file = fopen($file_name, 'r');
 
+        $data = array();
+        //create data from log file
         while(!feof($file)) {
-             $data[] = fgets($file);
+            $tmp_data = fgets($file);
+            if ($param_date == "all") {
+                $data[] = $tmp_data;
+            } elseif (strpos($tmp_data, $param_date) !== false) {
+                $data[] = $tmp_data;
+            }
+        }
+        if (empty($data)) {
+            continue;
         }
         fclose($file);
-        array_pop($data);
 
-        foreach ($data as $k => $item) {
+        $date = $time = array();
+        foreach ($data as $key => $item) {
             $res = explode(' ', $item);
-            $date[] = isset($res[0]) ? str_replace('-', '/', substr($res[0], 5)) : null;
-            $time[] = isset($res[1]) ? round(str_replace(':', '.', $res[1]), 2) : null;
+            $tmp_time = isset($res[1]) ? round(str_replace(':', '.', $res[1]), 3) : null;
+            $tmp_date = isset($res[0]) ? str_replace('-', '/', substr($res[0], 5)) : null;
+            //convert date and time e.g.) 2/13 01:00 -> 2/12 25:00
+            if ($tmp_time < MIN_WORK_TIME) {
+                $tmp_time = 24 + $tmp_time;
+                $tmp_date = date("m/d", strtotime("-1 day", strtotime($tmp_date)));
+            }
+            $date[] = $tmp_date;
+            $time[] = $tmp_time;
         }
-        $series[] = array(
-            'name' => $name,
-            'data' => $time,
-        );
+        $series[$order]['name'] = $name;
+        $series[$order]['data'] = $time;
+        $date_list[$name] = $date;
+        $date_count_list[$name] = count($date_list[$name]);
     }
     if (empty($series)) {
-        header("Location: http://toru-furuya/~toru-furuya/makeGraph/index.php?error=ture&name=$param_name&month=$param_month");
+        header("Location: http://toru-furuya/toru-furuya/makeGraph/index.php?error=true&month=$param_month");
         exit;
     }
+
+    //use the longest date for common date
+    arsort($date_count_list);
+    $keys = array_keys($date_count_list);
+    $date = $date_list[$keys[0]];
+
 //prepare specific member's log
 } else {
     $data = $date = $time = array();
-    //check does file exist
+
+    //check if log file exists
     $file_name = $name_list[$param_name];
     if (!file_exists($file_name)) {
-        header("Location: http://localhost/makeGraph/index.php?error=true");
+        header("Location: http://localhost/makeGraph/index.php?error=ture&name=$param_name&month=$param_date");
         exit;
     }
     $file = fopen($file_name, 'r');
 
+    //create data from log file
     while(!feof($file)) {
         $tmp_data = fgets($file);
         if ($param_date == "all") {
@@ -78,7 +108,8 @@ if ($param_name == 'all') {
         $res = explode(' ', $item);
         $tmp_time = isset($res[1]) ? round(str_replace(':', '.', $res[1]), 2) : null;
         $tmp_date = isset($res[0]) ? str_replace('-', '/', substr($res[0], 5)) : null;
-        if ($tmp_time < 14.5) {
+        //convert date and time e.g.) 2/13 01:00 -> 2/12 25:00
+        if ($tmp_time < MIN_WORK_TIME) {
             $tmp_time = 24 + $tmp_time;
             $tmp_date = date("m/d", strtotime("-1 day", strtotime($tmp_date)));
         }
@@ -92,11 +123,6 @@ if ($param_name == 'all') {
 //encode to json
 $categories = json_encode($date);
 $series = json_encode($series);
-
-//generate month list
-for ($i = 0; $i < MAX_HISTORY; $i++) {
-    $month_list[] = date('Y-m', strtotime('-'.$i.'month'));
-}
 
 //output graph
 print<<<EOF
@@ -195,22 +221,22 @@ print<<<EOF
       <div class="navbar-inner">
         <div class="container-fluid">
           <a class="brand" href="http://localhost/makeGraph/">
-            KAERASE Master
+            K&M
           </a>
           <ul class="nav">
             <li>
-              <a href="#madananimonai">
-                About
-              </a>
-            </li>
-            <li>
-              <a href="#madananimonai">
+              <a href="http://localhost/makeGraph/">
                 Home
               </a>
             </li>
             <li>
               <a href="#madananimonai">
-                Contact
+                Ranking
+              </a>
+            </li>
+            <li>
+              <a href="#madananimonai">
+                Award
               </a>
             </li>
           </ul>
@@ -218,14 +244,6 @@ print<<<EOF
       </div>
     </div>
     <div class="container-fluid">
-      <div class="well">
-        <div>
-          <h1>
-            GO&nbsp;HOME!
-          </h1>
-          produced by 4E Project.
-        </div>
-      </div>
       <div class="input">
       <form action="makeGraph.php" method="POST">
         <div class="control-group">
@@ -262,6 +280,7 @@ print<<<EOF
     </script>
     <script src="http://s3.amazonaws.com/jetstrap-site/lib/bootstrap/2.2.1/js/bootstrap.js">
     </script>
+    <script type="text/javascript" src="js/themes/gray.js"></script>
 
 
   </body>
