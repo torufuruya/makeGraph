@@ -3,8 +3,8 @@
 define('LOG_PATH', 'log/');
 define('MAX_HISTORY', 5);
 
-if (!empty($_GET["error"])) {
-    $error_message = "その期間のログはありません。日を選択し直してください。";
+if ($_GET["error"]) {
+    $error_message = "指定された期間に".$_GET["name"]."さんのログが見つかりません。日付を選択し直してください。";
 } else {
     $error_message = "";
 }
@@ -19,7 +19,7 @@ foreach ($log_list as $name) {
 
 //generate month list
 for ($i = 0; $i < MAX_HISTORY; $i++) {
-    $month_list[] = date('Ym', strtotime('-'.$i.'month'));
+    $month_list[] = date('Y-m', strtotime('-'.$i.'month'));
 }
 
 //output selectbox
@@ -29,7 +29,7 @@ print<<<EOF
   
   <head>
     <meta charset="utf-8">
-    <title>
+    <title>Kaerase Master
     </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
@@ -53,30 +53,30 @@ print<<<EOF
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/ico/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="assets/ico/apple-touch-icon-57-precomposed.png">
     <style>
+      .input select { margin: 8px }
     </style>
   </head>
   
   <body>
-    <p style="color:red">$error_message</p>
     <div class="navbar navbar-fixed-top navbar-inverse">
       <div class="navbar-inner">
         <div class="container-fluid">
-          <a class="brand" href="#">
+          <a class="brand" href="http://localhost/makeGraph/">
             KAERASE Master
           </a>
           <ul class="nav">
             <li>
-              <a href="#">
+              <a href="#madananimonai">
                 About
               </a>
             </li>
             <li>
-              <a href="#">
+              <a href="#madananimonai">
                 Home
               </a>
             </li>
             <li>
-              <a href="#">
+              <a href="#madananimonai">
                 Contact
               </a>
             </li>
@@ -84,44 +84,46 @@ print<<<EOF
         </div>
       </div>
     </div>
-    <form action="makeGraph.php" method="POST">
     <div class="container-fluid">
-      <div class="alert">
+      <div class="well">
         <div>
           <h1>
             GO&nbsp;HOME!
           </h1>
-          This is produced by 4E Project.
+          produced by 4E Project.
         </div>
       </div>
-      <div class="control-group">
-        <label for="selectinput1">
-          Member List
-        </label>
-        <select name="name">
-          <option value="all">ALL
+      <p style="color:red">$error_message</p>
+      <div class="input">
+      <form action="makeGraph.php" method="POST">
+        <div class="control-group">
+          <select name="name">
+            <option value="all">ALL
+
 EOF;
 foreach ($name_list as $name) {
-    echo '<option value="' . $name . '">' . $name;
+    $selected = ($_GET["name"] && $_GET["name"] == $name) ? "selected" : "";
+    printf('<option value="%s" %s>%s', $name, $selected, $name);
 }
 print<<<EOF
-        </select>
-      </div>
-      <div class="control-group">
-        <label for="selectinput2">
-          Month
-        </label>
-        <select name="date">
+
+          </select>
+          <select name="date">
+
 EOF;
 foreach ($month_list as $month) {
-    echo '<option value="' . $month . '">' . $month;
+    $selected = ($_GET["month"] && $_GET["month"] == $month) ? "selected" : "";
+    printf('<option value="%s" %s>%s', $month, $selected, $month);
 }
 print<<<EOF
-        </select>
+
+            <option value="all">ALL(非推奨)
+          </select>
+          <input class="btn" type="submit" value="output">
+      </form>
       </div>
-      <input type="submit" value="出力">
-    </form>
     </div>
+    <hr>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
     </script>
