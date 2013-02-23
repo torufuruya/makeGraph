@@ -68,7 +68,7 @@ if ($param_name == 'all') {
         $date_count_list[$name] = count($date_list[$name]);
     }
     if (empty($series)) {
-        header("Location: http://toru-furuya/toru-furuya/makeGraph/index.php?error=true&month=$param_month");
+        header("Location: http://toru-furuya/toru-furuya/mkaerase/index.php?error=true&month=$param_month");
         exit;
     }
 
@@ -84,7 +84,7 @@ if ($param_name == 'all') {
     //check if log file exists
     $file_name = $name_list[$param_name];
     if (!file_exists($file_name)) {
-        header("Location: http://localhost/makeGraph/index.php?error=ture&name=$param_name&month=$param_date");
+        header("Location: http://toru-furuya/~toru-furuya/mkaerase/index.php?error=true&name=$param_name&month=$param_date");
         exit;
     }
     $file = fopen($file_name, 'r');
@@ -99,7 +99,7 @@ if ($param_name == 'all') {
         }
     }
     if (empty($data)) {
-        header("Location: http://localhost/makeGraph/index.php?error=ture&name=$param_name&month=$param_date");
+        header("Location: http://toru-furuya/~toru-furuya/mkaerase/index.php?error=true&name=$param_name&month=$param_date");
         exit;
     }
     fclose($file);
@@ -123,6 +123,7 @@ if ($param_name == 'all') {
 //encode to json
 $categories = json_encode($date);
 $series = json_encode($series);
+error_log(var_export($series, true));
 
 //output graph
 print<<<EOF
@@ -136,27 +137,17 @@ print<<<EOF
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <!-- Le styles -->
     <link href="http://s3.amazonaws.com/jetstrap-site/lib/bootstrap/2.2.1/css/bootstrap.css" rel="stylesheet">
     <style>
-      body { padding-top: 60px; /* 60px to make the container go all the way
-      to the bottom of the topbar */ }
+      body { padding-top: 60px }
+      .input select { margin: 8px }
     </style>
     <link href="http://s3.amazonaws.com/jetstrap-site/lib/bootstrap/2.2.1/css/bootstrap-responsive.css" rel="stylesheet">
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js">
-      </script>
-    <![endif]-->
-    <!-- Le fav and touch icons -->
     <link rel="shortcut icon" href="http://s3.amazonaws.com/jetstrap-site/lib/bootstrap/2.2.1/ico/favicon.ico">
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="assets/ico/apple-touch-icon-144-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/ico/apple-touch-icon-114-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/ico/apple-touch-icon-72-precomposed.png">
     <link rel="apple-touch-icon-precomposed" href="assets/ico/apple-touch-icon-57-precomposed.png">
-    <style>
-      .input select { margin: 8px }
-    </style>
 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script type="text/javascript">
@@ -220,12 +211,12 @@ print<<<EOF
     <div class="navbar navbar-fixed-top navbar-inverse">
       <div class="navbar-inner">
         <div class="container-fluid">
-          <a class="brand" href="http://localhost/makeGraph/">
+          <a class="brand" href="http://toru-furuya/~toru-furuya/mkaerase/">
             K&M
           </a>
           <ul class="nav">
             <li>
-              <a href="http://localhost/makeGraph/">
+              <a href="http://toru-furuya/~toru-furuya/mkaerase/">
                 Home
               </a>
             </li>
@@ -245,7 +236,7 @@ print<<<EOF
     </div>
     <div class="container-fluid">
       <div class="input">
-      <form action="makeGraph.php" method="POST">
+      <form action="output.php" method="POST">
         <div class="control-group">
           <select name="name">
             <option value="all">ALL
